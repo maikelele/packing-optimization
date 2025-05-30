@@ -9,7 +9,7 @@ circle_number = 10
 square_size = 1.0
 
 # Objective: Maximize the radius (minimize the negative radius)
-def objective(x):
+def objective(x: list[float]) -> float:
     r = x[-1]
     return -r
 
@@ -17,7 +17,7 @@ def objective(x):
 # Constraints:
 # 1. Circles must be within the square
 # 2. Circles must not overlap
-def constraints(x):
+def constraints(x: list[float]) -> list:
     cons = []
     r = x[-1]
     coords = x[:-1].reshape((circle_number, 2))

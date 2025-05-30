@@ -172,3 +172,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+.vscode
+mio__lab7.ipynb
+
+# pycharm
+.idea/
+
+pso_display.ipynb
