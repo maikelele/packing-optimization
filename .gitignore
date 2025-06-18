@@ -179,4 +179,6 @@ mio__lab7.ipynb
 # pycharm
 .idea/
 
-pso_display.ipynb
+test.ipynb
+genetic_packing.py
+test.*
