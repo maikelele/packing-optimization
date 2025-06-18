@@ -1,0 +1,220 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{Rozwiązanie problemu pakowania okręgów w kwadrat przy pomocy uczenia maszynowego}
+\author{Wojciech Marchewka, Michał Dyrek, Piotr Gwioździk}
+\date{\today}
+
+
+\usepackage{booktabs} % dla lepszej jakości tabel
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{calc}
+
+% Pagination stuff.
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Packages
+\usepackage{amsmath}
+% \usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsfonts}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{titlesec}
+\titlelabel{\thetitle.\quad}
+\usepackage{xcolor}
+
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{gensymb}
+\usepackage{tikz}
+\newtheorem{Df}{Definicja}
+\newtheorem{Tw}{Twierdzenie}
+
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\normalsize\ttfamily, % Tutaj zmieniamy rozmiar czcionki
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+
+\lstset{style=mystyle}
+
+\begin{document}
+
+\maketitle
+
+\section{Wstęp}
+
+W ostatnim czasie wiele najbardziej optymalnych wyników w dziedzinie problemów pakowania (ang. \textit{packing problems}) jest odkrywanych dzięki zastosowaniu metod uczenia maszynowego. 16 maja 2025 roku pracownicy Google opublikowali nowy sposób wykorzystania dużych modeli językowych (LLM) i technik uczenia maszynowego w celu znajdowania rozwiązań problemów pakowania.
+
+Zainspirowani tymi odkryciami w dziedzinie matematyki stosowanej, postanowiliśmy zmierzyć się z problemem pakowania okręgów w kwadracie (\textit{circle packing in a square}). Celem jest rozmieszczenie zadanej liczby jednakowych okręgów w kwadracie o stałym boku w taki sposób, aby ich promień był jak największy, co przekłada się na maksymalizację gęstości pakowania — rozumianej jako stosunek pola wszystkich okręgów do pola kwadratu.
+
+\section{Rozwiązanie problemu różnymi metodami}
+
+Problem postanowiliśmy rozwiązać kilkoma podejściami. Na początku zastosowaliśmy klasyczny algorytm optymalizacyjny SLSQP (ang. \textit{Sequential Least Squares Programming}). Następnie przeszliśmy do metod inspirowanych uczeniem maszynowym, takich jak optymalizacja rojem cząstek (PSO — \textit{Particle Swarm Optimization}) oraz algorytm genetyczny.
+
+Ze względu na to, że czas wykonywania obliczeń rośnie znacząco wraz ze wzrostem liczby okręgów, zdecydowaliśmy się ograniczyć analizę do przypadków od 4 do 10 okręgów.
+
+\subsection{Algorytm optymalizujący — SLSQP}
+
+SLSQP (ang. \textit{Sequential Least Squares Programming}) to klasyczny algorytm optymalizacji numerycznej, przeznaczony do rozwiązywania problemów optymalizacji nieliniowej z ograniczeniami. Znany już od lat 80., znajduje zastosowanie m.in. w zagadnieniach geometrycznych, takich jak problemy pakowania.
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Liczba okręgów & Promień (SLSQP) & Stosunek (SLSQP) & Gęstość (SLSQP) & Promień (Best) & Stosunek (Best) & Gęstość (Best) \\
+\midrule
+4  & 0.250000000 & 4.000003000 & 0.785397000 & 0.250000000 & 4.000000000 & 0.785398163 \\
+5  & 0.207107000 & 4.828428000 & 0.673765000 & 0.207106700 & 4.828427124 & 0.673765100 \\
+6  & 0.187681000 & 5.328201000 & 0.663957000 & 0.187680601 & 5.328201177 & 0.663956909 \\
+7  & 0.174458000 & 5.732051000 & 0.669311000 & 0.174457630 & 5.732050807 & 0.669310827 \\
+8  & 0.169305000 & 5.906508000 & 0.720407000 & 0.170540600 & 5.863703305 & 0.730963825 \\
+9  & 0.166667000 & 6.000000000 & 0.785398000 & 0.166666660 & 6.000000000 & 0.785398163 \\
+10 & 0.148182000 & 6.748454000 & 0.689829000 & 0.148204300 & 6.747441523 & 0.690035785 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Porównanie wyników gęstości dla metody SLSQP oraz najlepszych znanych wartości}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{SLSQP_1.png}
+    \caption{Błąd względny gęstości pakowania uzyskanej metodą SLSQP względem najlepszych znanych wyników}
+    \label{fig:slsqp-error}
+\end{figure}
+
+Jak pokazuje Tabela~1 oraz wykres na Rysunku 1, algorytm SLSQP poradził sobie bardzo dobrze. Dla prostszych przypadków — takich jak 4, 5, 6 oraz 9 okręgów — uzyskano niemal idealne wyniki. Dla pozostałych przypadków (poza pakowaniem ośmiu okręgów) błąd względny nie przekroczył jednego promila.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.59\linewidth}
+        \includegraphics[width=\linewidth]{SLSQP_2.png}
+        \caption{Rozmieszczenie 7 okręgów w kwadracie uzyskane metodą SLSQP}
+        \label{fig:slsqp-layout}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{SLSQP_3.png}
+        \caption{Najlepsze znane rozmieszczenie 7 okręgów w kwadracie}
+        \label{fig:best-layout}
+    \end{minipage}
+\end{figure}
+
+Na Rysunkach 2 oraz 3 przedstawiono porównanie rozmieszczenia siedmiu okręgów uzyskanego za pomocą algorytmu SLSQP z najlepszym znanym rozwiązaniem. Jak widać, nasze podejście bardzo dobrze odwzorowuje optymalną strukturę, co potwierdza skuteczność algorytmu optymalizacyjnego.
+
+
+
+
+
+\subsection{Algorytm roju cząstek (PSO)}
+
+Pierwszym algorytmem inspirowanym metodami uczenia maszynowego, który zastosowaliśmy do znajdowania optymalnego pakowania okręgów w kwadracie, był algorytm roju cząstek (ang. \textit{Particle Swarm Optimization}, PSO). Wybraliśmy go ze względu na jego skuteczność w zadaniach optymalizacyjnych oraz możliwość uzyskania dobrych wyników poprzez dostrojenie kilku parametrów sterujących.
+
+\begin{table}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrrrrr}
+\toprule
+Liczba okręgów & Promień (PSO) & Stosunek (PSO) & Gęstość (PSO) & Promień (Best) & Stosunek (Best) & Gęstość (Best) \\
+\midrule
+4  & 0.250000000 & 4.000000000 & 0.785398000 & 0.250000000 & 4.000000000 & 0.785398163 \\
+5  & 0.207107000 & 4.828427000 & 0.673765000 & 0.207106700 & 4.828427124 & 0.673765100 \\
+6  & 0.187678000 & 5.328272000 & 0.663939000 & 0.187680601 & 5.328201177 & 0.663956909 \\
+7  & 0.172454000 & 5.798652000 & 0.654024000 & 0.174457630 & 5.732050807 & 0.669310827 \\
+8  & 0.168793000 & 5.924429000 & 0.716056000 & 0.170540600 & 5.863703305 & 0.730963825 \\
+9  & 0.166667000 & 6.000000000 & 0.785398000 & 0.166666660 & 6.000000000 & 0.785398163 \\
+10 & 0.146581000 & 6.822151000 & 0.675005000 & 0.148204300 & 6.747441523 & 0.690035785 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Porównanie wyników gęstości dla PSO i najlepszych znanych wartości}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{PSO_1.png}
+    \caption{Błąd względny gęstości pakowania uzyskanej metodą PSO względem najlepszych znanych wyników}
+    \label{fig:pso-error}
+\end{figure}
+
+Jak pokazuje Rysunek 4 oraz Tabela~2, algorytm roju cząstek osiągnął bardzo dobre rezultaty. Podobnie jak metoda SLSQP, PSO uzyskał niemal optymalne rozwiązania dla przypadków z 4, 5, 6 i 9 okręgami. Dla pozostałych przypadków błąd względny nie przekroczył 2\%, co świadczy o wysokiej skuteczności tej metaheurystyki.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.59\linewidth}
+        \includegraphics[width=\linewidth]{PSO_2.jpg}
+        \caption{Rozmieszczenie 8 okręgów w kwadracie uzyskane metodą PSO}
+        \label{fig:pso-layout}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{PSO_3.png}
+        \caption{Najlepsze znane rozmieszczenie 8 okręgów w kwadracie}
+        \label{fig:best-pso-layout}
+    \end{minipage}
+\end{figure}
+
+Porównując wyniki uzyskane przez PSO z najlepszymi znanymi rozmieszczeniami (Rysunki 5 i 6), zauważamy pewne różnice, jednak nie są one znaczące. Pokazuje to, że algorytm roju cząstek zdołał znaleźć rozwiązanie bliskie optymalnemu, co potwierdza jego efektywność w problemach pakowania.
+
+
+
+\subsection{Algorytm genetyczny}
+Drugim algorytmem inspirowanym metodami uczenia maszynowego, który zastosowaliśmy był algorytm genetyczny (ang. 
+\section{Porównanie wyników i ich interpretacja}
+
+
+\section{Bibliografia}
+\renewcommand{\refname}{}
+\begin{thebibliography}{9}
+\bibitem{hydra}
+Hydra Project, \emph{Circle Packing in a Square}. Dostęp online: \url{http://hydra.nat.uni-magdeburg.de/packing/csq/csq.html}
+
+
+\bibitem{shin_kita}
+Shin, Y.-B., \& Kita, E. (2012). Solving two-dimensional packing problem using particle swarm optimization. \textit{Computer Assisted Methods in Engineering and Science}, 19(3), 241–255. Dostępne online: \url{https://cames.ippt.pan.pl/index.php/cames/article/download/92/85/}
+
+\bibitem{alphaevolve}
+Novikov, A., Vu, N., Eisenberger, M., Dupont, E., Huang, P.-S., Wagner, A. Z., \textit{et al.} (2025). AlphaEvolve: A coding agent for scientific and algorithmic discovery. Google DeepMind. Dostępne online: \url{https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/alphaevolve-a-gemini-powered-coding-agent-for-designing-advanced-algorithms/AlphaEvolve.pdf}
+
+
+\bibitem{wiki-csq}
+Wikipedia, \emph{Circle packing in a square}. \url{https://en.wikipedia.org/wiki/Circle_packing_in_a_square} 
+
+\bibitem{wiki-packing}
+Wikipedia, \emph{Packing problems}. \url{https://en.wikipedia.org/wiki/Packing_problems} 
+
+\bibitem{okulewicz}
+M. Okulewicz, \emph{2D Packing and Stock Cutting Problems}. Politechnika Warszawska, dostęp online: \url{https://pages.mini.pw.edu.pl/~okulewiczm/downloads/badania/2dPackingAndStockCutting.pdf} 
+
+
+
+\end{thebibliography}
+
+
+\end{document}
