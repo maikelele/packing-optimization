@@ -186,58 +186,21 @@ def custom_mutation(last_generation_offspring_crossover: np.ndarray, ga_instance
     near_optimal_mutation_step = mutation_step / 10  # Smaller step when near optimal solution
     near_optimal_threshold = 1.1  # Threshold to consider a solution near optimal
     for offspring in last_generation_offspring_crossover:
-        # Find a least dense quarter of the square and mutate there
-        halves = ['left', 'right', 'top', 'bottom']
-        circles_in_halves = {key: list() for key in halves}
-        for i in range(N):
-            x, y = offspring[i * 2], offspring[i * 2 + 1]
-            if x < square_size / 2:
-                circles_in_halves['left'].append(i)
-            elif x >= square_size / 2:
-                circles_in_halves['right'].append(i)
-            if y < square_size / 2:
-                circles_in_halves['bottom'].append(i)
-            elif y >= square_size / 2:
-                circles_in_halves['top'].append(i)
-
-        least_dense_half = min(circles_in_halves, key=lambda k: len(circles_in_halves[k]))
-
         if fitness_function(0, offspring, 0) > near_optimal_threshold:
-            if circles_in_halves[least_dense_half] is not None and len(circles_in_halves[least_dense_half]) > 0:
-                # Mutate only the circles in the least dense half with a smaller step
-                for i in circles_in_halves[least_dense_half]:
-                    offspring[i * 2] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
-                    offspring[i * 2 + 1] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
-                    # Ensure positions are inside the square
-                    offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)
-                    offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)
-            else:
-                # Mutate all circles with a smaller step
-                for i in range(N):
-                    offspring[i * 2] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
-                    offspring[i * 2 + 1] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
-                    # Ensure positions are inside the square
-                    offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)
-                    offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)
+            for i in range(N):
+                offspring[i * 2] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
+                offspring[i * 2 + 1] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
+                # Ensure positions are inside the square
+                offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)  
+                offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)
         else:
-            if circles_in_halves[least_dense_half] is not None and len(circles_in_halves[least_dense_half]) > 0:
-                # Mutate only circles in the least dense half
-                for i in circles_in_halves[least_dense_half]:
-                    offspring[i * 2] += np.random.uniform(-mutation_step, mutation_step)
-                    offspring[i * 2 + 1] += np.random.uniform(-mutation_step, mutation_step)
-                    # Ensure positions are inside the square
-                    offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)
-                    offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)
-                offspring[-1] += np.random.uniform(0, mutation_step)
-            else:
-                # Mutate all circles
-                for i in range(N):
-                    offspring[i * 2] += np.random.uniform(-mutation_step, mutation_step)
-                    offspring[i * 2 + 1] += np.random.uniform(-mutation_step, mutation_step)
-                    # Ensure positions are inside the square
-                    offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)  
-                    offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)  
-                offspring[-1] += np.random.uniform(0, mutation_step)
+            for i in range(N):
+                offspring[i * 2] += np.random.uniform(-mutation_step, mutation_step)
+                offspring[i * 2 + 1] += np.random.uniform(-mutation_step, mutation_step)
+                # Ensure positions are inside the square
+                offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)  
+                offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)  
+            offspring[-1] += np.random.uniform(0, mutation_step)
 
         # Update radius by a normal value if the fitness is positive
         if fitness_function(0, offspring, 0) > 0:
