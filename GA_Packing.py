@@ -3,6 +3,7 @@ import sys
 from math import pi
 import random
 
+import pandas as pd
 import numpy as np
 import pygad
 import matplotlib.pyplot as plt
@@ -135,18 +136,37 @@ def on_generation(ga_instance: pygad.GA):
         plot()
 
 def on_stop(ga_instance: pygad.GA, last_generation_fitness):
-    # plotting the best solution
-    best_coordinates.append(ga_instance.best_solution()[0][:-1].reshape((N, 2)))
-    best_radii.append(ga_instance.best_solution()[0][-1])
-    ax.cla()
-    ax.set_xlim(0, square_size)
-    ax.set_ylim(0, square_size)
-    ax.set_aspect('equal', adjustable='box')
-    ax.set_title(f"Final Generation {ga_instance.generations_completed} - Best fitness: {ga_instance.best_solution()[1]}")
-    for i in range(N):
-        circle = plt.Circle(best_coordinates[-1][i], best_radii[-1], color='green', alpha=0.5)
+    optimized_coords = ga_instance.best_solution()[0][:-1].reshape((N, 2))
+    optimized_radius = ga_instance.best_solution()[0][-1]
+
+    # Compute metrics
+    max_distance = np.max(np.linalg.norm(optimized_coords - np.array([square_size/2, square_size/2]), axis=1))
+    ratio = 1 / optimized_radius
+    density = N * pi * optimized_radius**2 / square_size**2
+
+    summary = pd.DataFrame({
+        "N": [N],
+        "radius": [optimized_radius],
+        "distance": [max_distance],
+        "ratio": [ratio],
+        "density": [density]
+    })
+    print(summary)
+
+    # Plot result
+    fig, ax = plt.subplots()
+    ax.set_aspect('equal')
+    for (x, y) in optimized_coords:
+        circle = plt.Circle((x, y), optimized_radius, fill=False, edgecolor='green')
         ax.add_patch(circle)
+    plt.xlim(0, square_size)
+    plt.ylim(0, square_size)
+    plt.title(f"PSO Optimal Packing of {N} Circles in a Square")
+    plt.grid(True)
     plt.show()
+
+
+
 
 
 def custom_crossover(parents: np.ndarray, offspring_size: tuple, ga_instance: pygad.GA) -> np.ndarray:
@@ -225,11 +245,11 @@ def custom_mutation(last_generation_offspring_crossover: np.ndarray, ga_instance
                 offspring[-1] += random.uniform(-mutation_step, mutation_step)
         # Else reduce the radius to and change positions of circles to avoid local minimum
         else:
-            offspring[-1] -= random.uniform(0, 3 * mutation_step) # to avoid getting stuck in a local minimum
+            offspring[-1] -= random.uniform(0, 5 * mutation_step) # to avoid getting stuck in a local minimum
             for i in range(N):
-                offspring[i * 2] += random.uniform(-5 * mutation_step, 5 * mutation_step) # to avoid getting stuck in a local minimum
+                offspring[i * 2] += random.uniform(-10 * mutation_step, 10 * mutation_step) # to avoid getting stuck in a local minimum
                 offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)  # Ensure positions are inside the square
-                offspring[i * 2 + 1] += random.uniform(-5 * mutation_step, 5 * mutation_step) 
+                offspring[i * 2 + 1] += random.uniform(-10 * mutation_step, 10 * mutation_step) 
                 offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)  
 
     return last_generation_offspring_crossover
@@ -248,7 +268,7 @@ ga_instance = pygad.GA(
     crossover_probability=crossover_probability,
     mutation_type=custom_mutation, # because of the specificity of the problem custom mutation is needed
     mutation_probability=mutation_probability,
-    gene_space = [{'low': 0.1, 'high': square_size - 0.1}] * 20 + [{'low': 0.085, 'high': 0.15}],
+    gene_space = [{'low': 0.1, 'high': square_size - 0.1}] * N * 2 + [{'low': 0.085, 'high': 0.15}],
     on_fitness=on_fitness,
     on_parents=on_parents,
     on_crossover=on_crossover,
