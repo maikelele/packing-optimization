@@ -14,8 +14,8 @@ N = 10  # number of circles
 square_size = 1.0 
 r_min = 0.01  
 r_max = square_size / 2  
-population_size = 100
-num_generations = 20_000
+population_size = 200
+num_generations = 2000
 crossover_probability = 0.7
 mutation_probability = 1
 best_coordinates = []
@@ -134,6 +134,20 @@ def on_generation(ga_instance: pygad.GA):
     if plotting_enabled:
         plot()
 
+def on_stop(ga_instance: pygad.GA, last_generation_fitness):
+    # plotting the best solution
+    best_coordinates.append(ga_instance.best_solution()[0][:-1].reshape((N, 2)))
+    best_radii.append(ga_instance.best_solution()[0][-1])
+    ax.cla()
+    ax.set_xlim(0, square_size)
+    ax.set_ylim(0, square_size)
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_title(f"Final Generation {ga_instance.generations_completed} - Best fitness: {ga_instance.best_solution()[1]}")
+    for i in range(N):
+        circle = plt.Circle(best_coordinates[-1][i], best_radii[-1], color='green', alpha=0.5)
+        ax.add_patch(circle)
+    plt.show()
+
 
 def custom_crossover(parents: np.ndarray, offspring_size: tuple, ga_instance: pygad.GA) -> np.ndarray:
     """
@@ -183,11 +197,13 @@ def custom_mutation(last_generation_offspring_crossover: np.ndarray, ga_instance
     Custom mutation function which applies a small mutation step to each gene in the offspring
     """
     mutation_step = 0.01  # Small step for mutation
-    near_optimal_mutation_step = mutation_step / 10  # Smaller step when near optimal solution
+    near_optimal_mutation_step = mutation_step / 1e6  # Smaller step when near optimal solution
     near_optimal_threshold = 1.1  # Threshold to consider a solution near optimal
     for offspring in last_generation_offspring_crossover:
+        # choosing 1 random circle to mutate
+        chosen_indices = random.sample(range(N), 1)
         if fitness_function(0, offspring, 0) > near_optimal_threshold:
-            for i in range(N):
+            for i in chosen_indices:
                 offspring[i * 2] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
                 offspring[i * 2 + 1] += np.random.uniform(-near_optimal_mutation_step, near_optimal_mutation_step)
                 # Ensure positions are inside the square
@@ -200,7 +216,6 @@ def custom_mutation(last_generation_offspring_crossover: np.ndarray, ga_instance
                 # Ensure positions are inside the square
                 offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)  
                 offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)  
-            offspring[-1] += np.random.uniform(0, mutation_step)
 
         # Update radius by a normal value if the fitness is positive
         if fitness_function(0, offspring, 0) > 0:
@@ -212,9 +227,9 @@ def custom_mutation(last_generation_offspring_crossover: np.ndarray, ga_instance
         else:
             offspring[-1] -= random.uniform(0, 3 * mutation_step) # to avoid getting stuck in a local minimum
             for i in range(N):
-                offspring[i * 2] += random.uniform(-10 * mutation_step, 10 * mutation_step) # to avoid getting stuck in a local minimum
+                offspring[i * 2] += random.uniform(-5 * mutation_step, 5 * mutation_step) # to avoid getting stuck in a local minimum
                 offspring[i * 2] = np.clip(offspring[i * 2], 0, square_size)  # Ensure positions are inside the square
-                offspring[i * 2 + 1] += random.uniform(-10 * mutation_step, 10 * mutation_step) 
+                offspring[i * 2 + 1] += random.uniform(-5 * mutation_step, 5 * mutation_step) 
                 offspring[i * 2 + 1] = np.clip(offspring[i * 2 + 1], 0, square_size)  
 
     return last_generation_offspring_crossover
@@ -239,6 +254,7 @@ ga_instance = pygad.GA(
     on_crossover=on_crossover,
     on_mutation=on_mutation,
     on_generation=on_generation,
+    on_stop=on_stop,
     keep_elitism=keep_elitism,
     allow_duplicate_genes=True,
 )
