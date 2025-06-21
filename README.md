@@ -13,7 +13,7 @@ This repository contains implementations of optimization algorithms for solving 
 - **Description**: Implements a global-best particle swarm optimization algorithm using the `pyswarms` library to solve the packing problem.
 
 ### 3. Genetic Algorithm (GA)
-- **File**: [`genetic_packing.py`](genetic_packing.py)
+- **File**: [`GA_Packing.py`](GA_Packing.py)
 - **Description**: Implements a genetic algorithm using the `pygad` library to optimize the packing of circles within a square. The algorithm evolves solutions over multiple generations to maximize the shared radius of the circles while ensuring they do not overlap and stay within the square's boundaries.
 
 ## Results Visualization
@@ -52,12 +52,16 @@ All three algorithms generate visualizations of the optimal packing configuratio
      ```
    - For Genetic Algorithm:
      ```bash
-     python genetic_packing.py
+     python GA_Packing.py
      ```
+      - live plotting enabled:
+        ``` bash
+        python GA_Packing.py y
+        ``` 
 
 ## File Structure
 - `SLSQP_Packing.py`: Implementation of the SLSQP algorithm.
 - `PSO_Packing.py`: Implementation of the PSO algorithm.
-- `genetic_packing.py`: Implementation of the Genetic Algorithm.
+- `GA_Packing.py`: Implementation of the Genetic Algorithm.
 - `.gitignore`: Specifies files and directories to be ignored by Git.
 - `README.md`: Documentation for the repository.

@@ -1,0 +1,6 @@
+numpy
+pygad
+matplotlib
+scipy
+pandas
+pyswarm
